@@ -7,6 +7,9 @@
 *.userosscache
 *.sln.docstates
 
+#.kwad files, don't want to include these, because redistributing them probably breaks a few laws
+*.kwad
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
