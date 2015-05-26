@@ -11,15 +11,14 @@ namespace KWAD_Extractor_V2
     {
         static void Main(string[] args)
         {
-            //string[] files = Directory.GetFiles("KWAD/");
-            //Dictionary<string, KWADLoader> loaders = new Dictionary<string, KWADLoader>();
-            //foreach (string file in files)
-            //{
-                //loaders.Add(file, new KWADLoader(file));
-            //}
-            KWADLoader loader = new KWADLoader("KWAD/movies.kwad");
-            Console.WriteLine("Extraction complete.");
-            Console.ReadLine();
+            string[] files = Directory.GetFiles("KWAD/");
+            Dictionary<string, KWADLoader> loaders = new Dictionary<string, KWADLoader>();
+            foreach (string file in files)
+            {
+                loaders.Add(file, new KWADLoader(file));
+            }
+            Console.WriteLine("Extraction complete. Press any key to exit...");
+            Console.ReadKey();
         }
     }
 }
