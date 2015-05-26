@@ -1,4 +1,4 @@
-﻿struct VirtualFile
+﻿class VirtualFile
 {
     public int size;
     public int offset;
