@@ -20,21 +20,25 @@ namespace KWAD_Extractor_V2
 
         Encoding encoding = UTF8Encoding.UTF8;
 
-        List<VirtualFile> files;
+        public List<VirtualFile> files;
+        public int resourceCount;
 
         public KWADLoader(string filename)
         {
-            Console.WriteLine("Loading " + filename);
             fileBytes = File.ReadAllBytes(filename);
             readHeader();
             readMetaData();
         }
 
+        public byte[] extractRange(int start, int length)
+        {
+            return fileBytes.Skip(start).Take(length - 1).ToArray();
+        }
+
         private void readMetaData()
         {
             //Get count of resources
-            int resourceCount = BitConverter.ToInt32(fileBytes, resourceCountOffset);
-            Console.WriteLine(resourceCount + " resources found");
+            resourceCount = BitConverter.ToInt32(fileBytes, resourceCountOffset);
             //Init the stored file array to the same amount
             files = new List<VirtualFile>(resourceCount);
             MemoryStream memStream = new MemoryStream(fileBytes); //create a stream to deal with the rest of the file

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace KWAD_Extractor_V2
 {
@@ -11,13 +13,13 @@ namespace KWAD_Extractor_V2
     {
         static void Main(string[] args)
         {
-            string[] files = Directory.GetFiles("KWAD/");
-            Dictionary<string, KWADLoader> loaders = new Dictionary<string, KWADLoader>();
-            foreach (string file in files)
-            {
-                loaders.Add(file, new KWADLoader(file));
-            }
+            KWADExtractor extractor = new KWADExtractor("KWAD/", "extracted/");
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            extractor.extract();
+            timer.Stop();
             Console.WriteLine("Extraction complete. Press any key to exit...");
+            Console.WriteLine("Extracted in: " + timer.ElapsedMilliseconds + "ms");
             Console.ReadKey();
         }
     }
