@@ -16,6 +16,9 @@ namespace KWAD_Extractor_V2
 
         private int resourceCountOffset = 16;
         private int resourceInfoOffset = 20;
+        private int resourceInfoSize = 16;
+
+        Encoding encoding = UTF8Encoding.UTF8;
 
         List<VirtualFile> files;
 
@@ -29,15 +32,30 @@ namespace KWAD_Extractor_V2
 
         private void readMetaData()
         {
+            //Get count of resources
             int resourceCount = BitConverter.ToInt32(fileBytes, resourceCountOffset);
-            Console.WriteLine(resourceCount);
+            Console.WriteLine(resourceCount + " resources found");
+            //Init the stored file array to the same amount
+            files = new List<VirtualFile>(resourceCount);
+            MemoryStream memStream = new MemoryStream(fileBytes); //create a stream to deal with the rest of the file
+            memStream.Seek(resourceInfoOffset, SeekOrigin.Begin);
+            BinaryReader reader = new BinaryReader(memStream);
+            for (int i = 0; i < resourceCount; i++)
+            {
+                VirtualFile file = new VirtualFile();
+                int slabIndex = reader.ReadInt32(); //For now, we throw this away, but its being kept for later
+                file.size = reader.ReadInt32();
+                file.offset = reader.ReadInt32();
+                file.type = encoding.GetString(reader.ReadBytes(4));
+                files.Add(file);
+            }   
         }
 
         private void readHeader() 
         {
             BinaryFormatter formatter = new BinaryFormatter();
             string header = "KLEIPKG2";
-            string fileHeader = UTF8Encoding.GetEncoding("UTF-8").GetString(fileBytes.Take(8).ToArray());
+            string fileHeader = encoding.GetString(fileBytes.Take(8).ToArray());
             if (fileHeader != header)
             {
                 Console.WriteLine("Invalid header found. File may be corrupt.");

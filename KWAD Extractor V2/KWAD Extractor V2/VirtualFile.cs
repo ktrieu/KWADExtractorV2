@@ -1,7 +1,7 @@
 ﻿struct VirtualFile
 {
-    int size;
-    int offset;
-    string type;
-    string alias;
+    public int size;
+    public int offset;
+    public string type;
+    public string alias;
 }
