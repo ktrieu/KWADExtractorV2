@@ -36,7 +36,9 @@ namespace KWAD_Extractor_V2
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(path));
                     }
-                    loader.extractFile(path, file.offset, file.size);
+                    FileStream stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write);
+                    loader.extractRange(file).CopyTo(stream);
+                    stream.Flush();
                 }
             );
         }

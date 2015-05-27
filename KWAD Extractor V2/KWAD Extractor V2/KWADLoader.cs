@@ -31,10 +31,9 @@ namespace KWAD_Extractor_V2
             readMetaData();
         }
 
-        public void extractFile(string path, int start, int length)
+        public MemoryStream extractRange(VirtualFile file)
         {
-            FileStream stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write);
-            stream.Write(fileBytes, start, length);
+            return new MemoryStream(fileBytes, file.offset, file.size);
         }
 
         private void readMetaData()
