@@ -13,6 +13,8 @@ namespace KWAD_Extractor_V2
 
         string fileDir;
 
+        private int blobSigOffset = 12;
+
         Encoding encoding = Encoding.UTF8;
 
         public PostProcessor(string fileDir)
@@ -30,12 +32,29 @@ namespace KWAD_Extractor_V2
             byte[] header = new byte[8];
             file.Read(header, 0, 8);
             string headerStr = encoding.GetString(header);
+            switch (headerStr)
+            {
+                case "KLEIBLOB":
+                    processBlob(file);
+                    break;
+                case "KLEISRF1":
+                    processSrf(file);
+                    break;
+                case "KLEITEX1":
+                    processTex(file);
+                    break;
+            }
 
         }
 
         private void processBlob(FileStream file)
         {
-
+            byte[] temp = new byte[file.Length];
+            file.Read(temp, 0, (int)file.Length);
+            file.Close();
+            FileStream replaced = File.Open(file.Name, FileMode.Open, FileAccess.Write);
+            replaced.Write(temp, blobSigOffset, temp.Length - blobSigOffset);
+            
         }
 
         private void processSrf(FileStream file)
