@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
+using System.Runtime;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,9 +31,10 @@ namespace KWAD_Extractor_V2
             readMetaData();
         }
 
-        public byte[] extractRange(int start, int length)
+        public void extractFile(string path, int start, int length)
         {
-            return fileBytes.Skip(start).Take(length).ToArray();
+            FileStream stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write);
+            stream.Write(fileBytes, start, length);
         }
 
         private void readMetaData()

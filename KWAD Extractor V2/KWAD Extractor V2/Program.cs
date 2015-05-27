@@ -11,15 +11,15 @@ namespace KWAD_Extractor_V2
 {
     class Program
     {
+
         static void Main(string[] args)
         {
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
             KWADExtractor extractor = new KWADExtractor("KWAD/", "extracted/");
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            extractor.extract();
-            timer.Stop();
+            watch.Stop();
             Console.WriteLine("Extraction complete. Press any key to exit...");
-            Console.WriteLine("Extracted in: " + timer.ElapsedMilliseconds + "ms");
+            Console.WriteLine("Extracted in: " + watch.ElapsedMilliseconds + "ms");
             Console.ReadKey();
         }
     }

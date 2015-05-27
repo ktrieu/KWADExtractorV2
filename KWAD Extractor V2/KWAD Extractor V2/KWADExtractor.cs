@@ -20,30 +20,25 @@ namespace KWAD_Extractor_V2
             string[] files = Directory.GetFiles(KWADDir);
             foreach (string file in files)
             {
-                loaders.Add(file, new KWADLoader(file));
+                extract(file, new KWADLoader(file));
             }
         }
 
-        public void extract()
+        private void extract(string name, KWADLoader loader)
         {
-            foreach (var pair in loaders)
-            {
-                KWADLoader loader = pair.Value;
-                string name = pair.Key;
-                Console.WriteLine("Extracting " + name);
-                Console.WriteLine(loader.resourceCount + " files found");
-                List<VirtualFile> files = loader.files;
-                Parallel.ForEach(files, file =>
+            Console.WriteLine("Extracting " + name);
+            Console.WriteLine(loader.resourceCount + " files found");
+            List<VirtualFile> files = loader.files;
+            Parallel.ForEach(files, file =>
+                {
+                    string path = Path.Combine(extractDir, file.alias);
+                    if (!Directory.Exists(Path.GetDirectoryName(path)))
                     {
-                        string path = Path.Combine(extractDir, file.alias);
-                        if (!Directory.Exists(Path.GetDirectoryName(path)))
-                        {
-                            Directory.CreateDirectory(Path.GetDirectoryName(path));
-                        }
-                        File.WriteAllBytes(path, loader.extractRange(file.offset, file.size));
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
                     }
-                );
-            }
+                    loader.extractFile(path, file.offset, file.size);
+                }
+            );
         }
     }
 }
