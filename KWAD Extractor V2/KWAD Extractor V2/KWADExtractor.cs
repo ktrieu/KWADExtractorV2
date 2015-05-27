@@ -33,17 +33,17 @@ namespace KWAD_Extractor_V2
                 Console.WriteLine("Extracting " + name);
                 Console.WriteLine(loader.resourceCount + " files found");
                 List<VirtualFile> files = loader.files;
-                foreach (var file in files)
-                {
-                    string path = Path.Combine(extractDir, file.alias);
-                    if (!Directory.Exists(Path.GetDirectoryName(path)))
+                Parallel.ForEach(files, file =>
                     {
-                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        string path = Path.Combine(extractDir, file.alias);
+                        if (!Directory.Exists(Path.GetDirectoryName(path)))
+                        {
+                            Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        }
+                        File.WriteAllBytes(path, loader.extractRange(file.offset, file.size));
                     }
-                    File.WriteAllBytes(path, loader.extractRange(file.offset, file.size));
-                }
+                );
             }
         }
-
     }
 }

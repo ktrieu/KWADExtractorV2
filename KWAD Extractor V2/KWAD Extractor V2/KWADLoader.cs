@@ -32,7 +32,7 @@ namespace KWAD_Extractor_V2
 
         public byte[] extractRange(int start, int length)
         {
-            return fileBytes.Skip(start).Take(length - 1).ToArray();
+            return fileBytes.Skip(start).Take(length).ToArray();
         }
 
         private void readMetaData()
