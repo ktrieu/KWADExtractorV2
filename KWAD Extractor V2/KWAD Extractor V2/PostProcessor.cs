@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,8 @@ namespace KWAD_Extractor_V2
 
         string fileDir;
 
-        private int blobSigOffset = 12;
+        private int sigOffset = 12;
+        private int srfCompressionBoolOffset = 20;
 
         Encoding encoding = Encoding.UTF8;
 
@@ -53,13 +55,28 @@ namespace KWAD_Extractor_V2
             file.Read(temp, 0, (int)file.Length);
             file.Close();
             FileStream replaced = File.Open(file.Name, FileMode.Open, FileAccess.Write);
-            replaced.Write(temp, blobSigOffset, temp.Length - blobSigOffset);
+            replaced.Write(temp, sigOffset, temp.Length - sigOffset);
             
         }
 
         private void processSrf(FileStream file)
         {
-
+            file.Seek(srfCompressionBoolOffset, SeekOrigin.Begin);
+            BinaryReader reader = new BinaryReader(file);
+            bool compression = Convert.ToBoolean(reader.ReadInt32());
+            int mipCount = reader.ReadInt32();
+            int mipDataSize = reader.ReadInt32();
+            for (int i = 0; i < mipCount; i++)
+            {
+                int size = reader.ReadInt32();
+                int width = reader.ReadInt32();
+                int height = reader.ReadInt32(); //We're throwing these away for now, but they're being read so we can use them later and to advance the reader
+                int dataSize = reader.ReadInt32();
+                byte[] data = new byte[dataSize];
+                data = reader.ReadBytes(dataSize);
+                MemoryStream dataStream = new MemoryStream(data, 2, data.Length - 2); //doesn't include the first two bytes of the array, because of zlibs header
+                DeflateStream defStream = new DeflateStream(dataStream, CompressionMode.Decompress); 
+            }
         }
 
         private void processTex(FileStream file)
