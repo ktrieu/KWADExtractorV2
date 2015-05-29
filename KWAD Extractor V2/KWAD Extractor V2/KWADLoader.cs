@@ -15,6 +15,8 @@ namespace KWAD_Extractor_V2
 
         byte[] fileBytes;
 
+        string filename;
+
         private int resourceCountOffset = 16;
         private int resourceInfoOffset = 20;
         private int resourceInfoSize = 16;
@@ -26,6 +28,7 @@ namespace KWAD_Extractor_V2
 
         public KWADLoader(string filename)
         {
+            this.filename = filename;
             fileBytes = File.ReadAllBytes(filename);
             readHeader();
             readMetaData();
@@ -54,6 +57,8 @@ namespace KWAD_Extractor_V2
                 file.type = encoding.GetString(reader.ReadBytes(4));
                 files.Add(file);
             }
+            FileStream aliasDump = File.Open(filename.Replace(".kwad", ".alias"), FileMode.OpenOrCreate, FileAccess.Write);
+            StreamWriter aliasWriter = new StreamWriter(aliasDump);
             int aliasCount = reader.ReadInt32();
             for (int i = 0; i < aliasCount; i++)
             {
@@ -62,13 +67,13 @@ namespace KWAD_Extractor_V2
                 byte[] aliasBytes = reader.ReadBytes(paddedLen);
                 string alias = encoding.GetString(aliasBytes).Substring(0, aliasLen);
                 int aliasIndex = reader.ReadInt32();
+                aliasWriter.WriteLine(aliasIndex + ":" + alias);
                 files[aliasIndex].alias = alias;
             }
         }
 
         private void readHeader() 
         {
-            BinaryFormatter formatter = new BinaryFormatter();
             string header = "KLEIPKG2";
             string fileHeader = encoding.GetString(fileBytes.Take(8).ToArray());
             if (fileHeader != header)
