@@ -1,6 +1,9 @@
-﻿using System;
+﻿using ManagedSquish;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -63,7 +66,7 @@ namespace KWAD_Extractor_V2
         {
             file.Seek(srfCompressionBoolOffset, SeekOrigin.Begin);
             BinaryReader reader = new BinaryReader(file);
-            bool compression = Convert.ToBoolean(reader.ReadInt32());
+            bool compressed = Convert.ToBoolean(reader.ReadInt32());
             int mipCount = reader.ReadInt32();
             int mipDataSize = reader.ReadInt32();
             for (int i = 0; i < mipCount; i++)
@@ -75,7 +78,30 @@ namespace KWAD_Extractor_V2
                 byte[] data = new byte[dataSize];
                 data = reader.ReadBytes(dataSize);
                 MemoryStream dataStream = new MemoryStream(data, 2, data.Length - 2); //doesn't include the first two bytes of the array, because of zlibs header
-                DeflateStream defStream = new DeflateStream(dataStream, CompressionMode.Decompress); 
+                DeflateStream defStream = new DeflateStream(dataStream, CompressionMode.Decompress);
+                MemoryStream tex = new MemoryStream();
+                defStream.CopyTo(tex);
+                dataStream.Close();
+                defStream.Close();
+                if (compressed)
+                {
+                    tex = new MemoryStream(Squish.DecompressImage(tex.ToArray(), width, height, SquishFlags.Dxt5));
+                }
+                string writePath = file.Name.Replace("extracted", "processed").Replace(".tex", ".png");
+                saveImage(writePath, width, height, tex.ToArray());
+            }
+        }
+
+        private unsafe void saveImage(string path, int width, int height, byte[] data)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            fixed (byte* dataPtr = data)
+            {
+                Bitmap bmp = new Bitmap(width, height, width * 4, PixelFormat.Format32bppArgb, new IntPtr(dataPtr));
+                using (FileStream fStream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    bmp.Save(fStream, ImageFormat.Png);
+                }
             }
         }
 
