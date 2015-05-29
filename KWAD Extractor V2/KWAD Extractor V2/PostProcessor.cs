@@ -67,10 +67,12 @@ namespace KWAD_Extractor_V2
 
         private void processBlob(FileStream file)
         {
+            file.Seek(0, SeekOrigin.Begin);
             byte[] temp = new byte[file.Length];
             file.Read(temp, 0, (int)file.Length);
             file.Close();
             string writePath = file.Name.Replace("extracted", "processed");
+            Directory.CreateDirectory(Path.GetDirectoryName(writePath));
             FileStream replaced = File.Open(writePath, FileMode.OpenOrCreate, FileAccess.Write);
             replaced.Write(temp, sigOffset, temp.Length - sigOffset);
             
@@ -127,7 +129,7 @@ namespace KWAD_Extractor_V2
 
         }
 
-        private void getAnimFilePath(string path)
+        private void getFilePath(string path)
         {
 
         }
