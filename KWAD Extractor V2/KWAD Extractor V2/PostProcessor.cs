@@ -70,7 +70,8 @@ namespace KWAD_Extractor_V2
             byte[] temp = new byte[file.Length];
             file.Read(temp, 0, (int)file.Length);
             file.Close();
-            FileStream replaced = File.Open(file.Name.Replace("extracted", "processed"), FileMode.OpenOrCreate, FileAccess.Write);
+            string writePath = file.Name.Replace("extracted", "processed");
+            FileStream replaced = File.Open(writePath, FileMode.OpenOrCreate, FileAccess.Write);
             replaced.Write(temp, sigOffset, temp.Length - sigOffset);
             
         }
@@ -90,18 +91,21 @@ namespace KWAD_Extractor_V2
                 int dataSize = reader.ReadInt32();
                 byte[] data = new byte[dataSize];
                 data = reader.ReadBytes(dataSize);
-                MemoryStream dataStream = new MemoryStream(data, 2, data.Length - 2); //doesn't include the first two bytes of the array, because of zlibs header
-                DeflateStream defStream = new DeflateStream(dataStream, CompressionMode.Decompress);
-                MemoryStream tex = new MemoryStream();
-                defStream.CopyTo(tex);
-                dataStream.Close();
-                defStream.Close();
-                if (compressed)
+                using (MemoryStream dataStream = new MemoryStream(data, 2, data.Length - 2)) //doesn't include the first two bytes of the array, because of zlibs header
+                using (MemoryStream tex = new MemoryStream()) 
+                using (DeflateStream defStream = new DeflateStream(dataStream, CompressionMode.Decompress))
                 {
-                    tex = new MemoryStream(Squish.DecompressImage(tex.ToArray(), width, height, SquishFlags.Dxt5));
+                    defStream.CopyTo(tex);
+                    string writePath = file.Name.Replace("extracted", "processed").Replace(".tex", ".png");
+                    if (compressed)
+                    {
+                        saveImage(writePath, width, height, Squish.DecompressImage(tex.ToArray(), width, height, SquishFlags.Dxt5));
+                    }
+                    else
+                    {
+                        saveImage(writePath, width, height, tex.ToArray());
+                    }
                 }
-                string writePath = file.Name.Replace("extracted", "processed").Replace(".tex", ".png");
-                saveImage(writePath, width, height, tex.ToArray());
             }
         }
 
