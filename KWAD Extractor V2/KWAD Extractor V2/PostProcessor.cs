@@ -25,11 +25,28 @@ namespace KWAD_Extractor_V2
         public PostProcessor(string fileDir)
         {
             this.fileDir = fileDir;
+            Console.WriteLine("Processing KLEISRF files");
+            //Process KLEISRFs, which confusingly have the extension .tex. These need to be processed first because the .pngs depend on them
+            Parallel.ForEach(Directory.EnumerateFiles(fileDir, "*.tex", SearchOption.AllDirectories), path =>
+                {
+                    FileStream file = File.Open(path, FileMode.Open, FileAccess.ReadWrite);
+                    processSrf(file);
+                });
+            Console.WriteLine("Processing KLEITEX files");
+            //Then process the .pngs
+            Parallel.ForEach(Directory.EnumerateFiles(fileDir, "*.png", SearchOption.AllDirectories), path =>
+                {
+                    FileStream file = File.Open(path, FileMode.Open, FileAccess.ReadWrite);
+                    processTex(file);
+                });
+            Console.WriteLine("Processing all other files");
+            //Process everything without those extensions
             Parallel.ForEach(Directory.EnumerateFiles(fileDir, "*", SearchOption.AllDirectories), path =>
                 {
                     FileStream file = File.Open(path, FileMode.Open, FileAccess.ReadWrite);
                     processFile(file);
                 });
+
         }
 
         private void processFile(FileStream file)
@@ -42,11 +59,7 @@ namespace KWAD_Extractor_V2
                 case "KLEIBLOB":
                     processBlob(file);
                     break;
-                case "KLEISRF1":
-                    processSrf(file);
-                    break;
-                case "KLEITEX1":
-                    processTex(file);
+                default:
                     break;
             }
 
@@ -57,7 +70,7 @@ namespace KWAD_Extractor_V2
             byte[] temp = new byte[file.Length];
             file.Read(temp, 0, (int)file.Length);
             file.Close();
-            FileStream replaced = File.Open(file.Name, FileMode.Open, FileAccess.Write);
+            FileStream replaced = File.Open(file.Name.Replace("extracted", "processed"), FileMode.OpenOrCreate, FileAccess.Write);
             replaced.Write(temp, sigOffset, temp.Length - sigOffset);
             
         }
@@ -106,6 +119,11 @@ namespace KWAD_Extractor_V2
         }
 
         private void processTex(FileStream file)
+        {
+
+        }
+
+        private void getAnimFilePath(string path)
         {
 
         }
