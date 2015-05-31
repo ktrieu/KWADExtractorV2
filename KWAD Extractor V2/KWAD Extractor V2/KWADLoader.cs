@@ -13,13 +13,12 @@ namespace KWAD_Extractor_V2
     class KWADLoader
     {
 
-        byte[] fileBytes;
+        public byte[] fileBytes;
 
         string filename;
 
         private int resourceCountOffset = 16;
         private int resourceInfoOffset = 20;
-        private int resourceInfoSize = 16;
 
         Encoding encoding = UTF8Encoding.UTF8;
 
@@ -51,14 +50,13 @@ namespace KWAD_Extractor_V2
             for (int i = 0; i < resourceCount; i++)
             {
                 VirtualFile file = new VirtualFile();
+                file.KWADPath = filename;
                 int slabIndex = reader.ReadInt32(); //For now, we throw this away, but its being kept for later
                 file.size = reader.ReadInt32();
                 file.offset = reader.ReadInt32();
                 file.type = encoding.GetString(reader.ReadBytes(4));
                 files.Add(file);
             }
-            FileStream aliasDump = File.Open(filename.Replace(".kwad", ".alias"), FileMode.OpenOrCreate, FileAccess.Write);
-            StreamWriter aliasWriter = new StreamWriter(aliasDump);
             int aliasCount = reader.ReadInt32();
             for (int i = 0; i < aliasCount; i++)
             {
@@ -67,7 +65,6 @@ namespace KWAD_Extractor_V2
                 byte[] aliasBytes = reader.ReadBytes(paddedLen);
                 string alias = encoding.GetString(aliasBytes).Substring(0, aliasLen);
                 int aliasIndex = reader.ReadInt32();
-                aliasWriter.WriteLine(aliasIndex + ":" + alias);
                 files[aliasIndex].alias = alias;
             }
         }

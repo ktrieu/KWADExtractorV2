@@ -11,6 +11,8 @@ namespace KWAD_Extractor_V2
     {
         string extractDir;
 
+        public Dictionary<string, List<VirtualFile>> allFiles = new Dictionary<string, List<VirtualFile>>();
+
         Dictionary<string, KWADLoader> loaders = new Dictionary<string, KWADLoader>();
 
         public KWADExtractor(string KWADDir, string extractDir)
@@ -26,6 +28,7 @@ namespace KWAD_Extractor_V2
 
         private void extract(string name, KWADLoader loader)
         {
+            allFiles.Add(name, loader.files);
             Console.WriteLine("Extracting " + name);
             Console.WriteLine(loader.resourceCount + " files found");
             List<VirtualFile> files = loader.files;
@@ -37,7 +40,7 @@ namespace KWAD_Extractor_V2
                         Directory.CreateDirectory(Path.GetDirectoryName(path));
                     }
                     FileStream stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write);
-                    loader.extractRange(file).CopyTo(stream);
+                    loader.extractRange(file).WriteTo(stream);
                     stream.Flush();
                 }
             );

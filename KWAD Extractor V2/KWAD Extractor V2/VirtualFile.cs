@@ -4,4 +4,5 @@
     public int offset;
     public string type;
     public string alias;
+    public string KWADPath;
 }
