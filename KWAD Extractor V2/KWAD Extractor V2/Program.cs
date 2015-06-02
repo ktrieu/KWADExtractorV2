@@ -19,13 +19,14 @@ namespace KWAD_Extractor_V2
             KWADExtractor extractor = new KWADExtractor("KWAD/", "extracted/");
             watch.Stop();
             Console.WriteLine("Extracted in: " + watch.ElapsedMilliseconds + "ms");
-            Console.WriteLine("Beginning file post-processing...");
+            Console.WriteLine("Press any key to begin file post-processing...");
+            Console.ReadKey(true);
             watch.Start();
             PostProcessor processor = new PostProcessor(extractor.allFiles);
             watch.Stop();
             Console.WriteLine("Post-processing complete in {0}ms", watch.ElapsedMilliseconds);
             Console.WriteLine("Post-processing complete. Press any key to continue");
-            Console.ReadKey();
+            Console.ReadKey(true);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,6 +24,10 @@ namespace KWAD_Extractor_V2
         Encoding encoding = Encoding.UTF8;
 
         Dictionary<string, List<VirtualFile>> files;
+
+        Dictionary<string, List<CachedSRF>> srfCache = new Dictionary<string, List<CachedSRF>>();
+
+        private static Object lockObj = new Object();
 
         public PostProcessor(Dictionary<string, List<VirtualFile>> files)
         {
@@ -40,6 +45,7 @@ namespace KWAD_Extractor_V2
                         processTex(file);
                     });
             }
+            processSrfCache();
         }
 
         private void processBlob(VirtualFile file)
@@ -111,20 +117,46 @@ namespace KWAD_Extractor_V2
                 texIndex = reader.ReadInt32();
                 width = reader.ReadInt32();
                 height = reader.ReadInt32();
-                affineData[0] = reader.ReadSingle();
-                affineData[1] = reader.ReadSingle();
+                affineData[0] = reader.ReadSingle() * width; //denormalizing from OpenGL coords
+                affineData[1] = reader.ReadSingle() * height;
                 affineData[2] = reader.ReadSingle();
                 affineData[3] = reader.ReadSingle();
-                affineData[4] = reader.ReadSingle();
-                affineData[5] = reader.ReadSingle();
-                System.Windows.Media.Matrix affineTransform = new System.Windows.Media.Matrix(affineData[0], affineData[1], affineData[2], affineData[3], affineData[4], affineData[5]);
+                affineData[4] = reader.ReadSingle() * width;
+                affineData[5] = reader.ReadSingle() * height;
                 string imagePath = (files[file.KWADPath])[texIndex].alias;
-                Console.WriteLine("Opening {0}", imagePath);
-                using (Bitmap bmp = new Bitmap("processed/" + Path.ChangeExtension(imagePath, ".png")))
+                lock (lockObj)
+                {
+                    if (!srfCache.ContainsKey(imagePath))
+                    {
+                        srfCache.Add(imagePath, new List<CachedSRF>());
+                    }
+                    srfCache[imagePath].Add(new CachedSRF(affineData, imagePath, file.alias));
+                }
+            }
+        }
+
+        private void processSrfCache()
+        {
+            foreach (string key in srfCache.Keys)
+            {
+                List<CachedSRF> srfs = srfCache[key];
+                using (FileStream fStream = File.Open(Path.ChangeExtension("processed/" + key, ".png"), FileMode.Open, FileAccess.Read))
+                using (Bitmap bmp = new Bitmap(fStream))
                 {
                     Rect imgRect = new Rect(0, 0, bmp.Width, bmp.Height);
-                    imgRect = Rect.Transform(imgRect, affineTransform);
-                    bmp.Clone(new Rectangle((int)imgRect.X, (int)imgRect.Y, (int)imgRect.Width, (int)imgRect.Height), bmp.PixelFormat).Save("processed/" + file.alias, ImageFormat.Png); //blame microsoft for this. Why would you need two rectangle classes?
+                    Parallel.ForEach(srfs, srf =>
+                        {
+                            System.Windows.Media.Matrix affineTransform = new System.Windows.Media.Matrix(srf.transform[0], srf.transform[1], srf.transform[2], srf.transform[3], srf.transform[4], srf.transform[5]);                            
+                            Rect transformRect = Rect.Transform(imgRect, affineTransform);
+                            Rectangle rectangle = new Rectangle((int)transformRect.X, (int)transformRect.Y, (int)transformRect.Width, (int)transformRect.Height);
+                            lock (lockObj)
+                            {
+                                using (Bitmap transformed = bmp.Clone(rectangle, bmp.PixelFormat))
+                                {
+                                    transformed.Save("processed/" + srf.alias);
+                                }
+                            }
+                        });         
                 }
             }
         }

@@ -32,18 +32,18 @@ namespace KWAD_Extractor_V2
             Console.WriteLine("Extracting " + name);
             Console.WriteLine(loader.resourceCount + " files found");
             List<VirtualFile> files = loader.files;
-            Parallel.ForEach(files, file =>
-                {
-                    string path = Path.Combine(extractDir, file.alias);
-                    if (!Directory.Exists(Path.GetDirectoryName(path)))
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(path));
-                    }
-                    FileStream stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write);
-                    loader.extractRange(file).WriteTo(stream);
-                    stream.Flush();
-                }
-            );
+            //Parallel.ForEach(files, file => UNCOMMENT THIS LATER YOU IDIOT
+            //    {
+            //        string path = Path.Combine(extractDir, file.alias);
+            //        if (!Directory.Exists(Path.GetDirectoryName(path)))
+            //        {
+            //            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            //        }
+            //        FileStream stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write);
+            //        loader.extractRange(file).WriteTo(stream);
+            //        stream.Flush();
+            //    }
+            //);
         }
     }
 }
