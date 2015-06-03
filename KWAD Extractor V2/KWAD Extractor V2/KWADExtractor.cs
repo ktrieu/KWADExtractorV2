@@ -32,7 +32,7 @@ namespace KWAD_Extractor_V2
             Console.WriteLine("Extracting " + name);
             Console.WriteLine(loader.resourceCount + " files found");
             List<VirtualFile> files = loader.files;
-            Parallel.ForEach(files, file => UNCOMMENT THIS LATER YOU IDIOT
+            Parallel.ForEach(files, file =>
                 {
                     string path = Path.Combine(extractDir, file.alias);
                     if (!Directory.Exists(Path.GetDirectoryName(path)))
