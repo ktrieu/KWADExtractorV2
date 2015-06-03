@@ -34,6 +34,12 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
+    <Reference Include="Magick.NET-AnyCPU">
+      <HintPath>..\packages\Magick.NET-Q16-AnyCPU.7.0.0.0014\lib\net40-client\Magick.NET-AnyCPU.dll</HintPath>
+    </Reference>
+    <Reference Include="Magick.NET.Core">
+      <HintPath>..\packages\Magick.NET-Q16-AnyCPU.7.0.0.0014\lib\net40-client\Magick.NET.Core.dll</HintPath>
+    </Reference>
     <Reference Include="ManagedSquish">
       <HintPath>..\packages\ManagedSquish.2.0.0.0\lib\net40\ManagedSquish.dll</HintPath>
     </Reference>

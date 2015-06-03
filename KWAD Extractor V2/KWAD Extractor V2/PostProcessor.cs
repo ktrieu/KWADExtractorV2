@@ -1,4 +1,5 @@
-﻿using ManagedSquish;
+﻿using ImageMagick;
+using ManagedSquish;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -37,7 +38,7 @@ namespace KWAD_Extractor_V2
                 Console.WriteLine("Processing SRF1 files...");
                 Parallel.ForEach(fileList.Where(file => file.type == "SRF1"), file =>
                     {
-                        //processSrf(file);
+                        processSrf(file);
                     });
                 Console.WriteLine("Processing TEX1 files...");
                 Parallel.ForEach(fileList.Where(file => file.type == "TEX1"), file =>
@@ -141,25 +142,24 @@ namespace KWAD_Extractor_V2
             {
                 List<CachedSRF> srfs = srfCache[key];
                 using (FileStream fStream = File.Open(Path.ChangeExtension("processed/" + key, ".png"), FileMode.Open, FileAccess.Read))
-                using (Bitmap bmp = new Bitmap(fStream))
+                using (MagickImage atlas = new MagickImage(fStream))
                 {
-                    Rect imgRect = new Rect(0, 0, bmp.Width, bmp.Height);
+                    Rect imgRect = new Rect(0, 0, atlas.Width, atlas.Height);
                     Parallel.ForEach(srfs, srf =>
                         {
-                            System.Windows.Media.Matrix affineTransform = new System.Windows.Media.Matrix(srf.transform[0], srf.transform[1], srf.transform[2], srf.transform[3], srf.transform[4], srf.transform[5]);                            
-                            Rect transformRect = Rect.Transform(imgRect, affineTransform);
-                            transformRect.X *= (int)imgRect.Width;
-                            transformRect.Y *= (int)imgRect.Height;
-                            Rectangle rectangle = new Rectangle((int)transformRect.X, (int)transformRect.Y, (int)transformRect.Width, (int)transformRect.Height);
-                            lock (lockObj)
+                            if (!File.Exists("processed/" + srf.alias))
                             {
-                                using (Bitmap transformed = bmp.Clone(rectangle, bmp.PixelFormat))
+                                System.Windows.Media.Matrix affineTransform = new System.Windows.Media.Matrix(srf.transform[0], srf.transform[1], srf.transform[2], srf.transform[3], srf.transform[4], srf.transform[5]);
+                                Rect transformRect = Rect.Transform(imgRect, affineTransform);
+                                transformRect.X *= (int)imgRect.Width;
+                                transformRect.Y *= (int)imgRect.Height;
+                                Rectangle rectangle = new Rectangle((int)transformRect.X, (int)transformRect.Y, (int)transformRect.Width, (int)transformRect.Height);
+                                using (MagickImage sprite = new MagickImage(atlas))
                                 {
-                                    string path = "processed/" + srf.alias;
-                                    if (!Directory.Exists(path)) //this avoids us extracting things that already exist, like the multiple one surface textures in the gui folder.
-                                    {
-                                        transformed.Save("processed/" + srf.alias);
-                                    }
+                                    MagickGeometry geo = new MagickGeometry(rectangle);
+                                    geo.IgnoreAspectRatio = true;
+                                    sprite.Crop(geo);
+                                    sprite.Write(new FileStream("processed/" + srf.alias, FileMode.OpenOrCreate), MagickFormat.Png);
                                 }
                             }
                         });         
