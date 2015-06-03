@@ -75,21 +75,22 @@ namespace KWAD_Extractor_V2
                     int width = reader.ReadInt32();
                     int height = reader.ReadInt32(); //We're throwing these away for now, but they're being read so we can use them later and to advance the reader
                     int dataSize = reader.ReadInt32();
+                    MemoryStream tex = new MemoryStream();
                     using (MemoryStream dataStream = new MemoryStream(reader.ReadBytes(dataSize), 2, dataSize - 2)) //doesn't include the first two bytes of the array, because of zlibs header
-                    using (MemoryStream tex = new MemoryStream())
                     using (DeflateStream defStream = new DeflateStream(dataStream, CompressionMode.Decompress))
                     {
                         defStream.CopyTo(tex);
-                        string writePath = "processed/" + Path.ChangeExtension(file.alias, ".png");
-                        if (compressed)
-                        {
-                            saveImage(writePath, width, height, Squish.DecompressImage(tex.ToArray(), width, height, SquishFlags.Dxt5));
-                        }
-                        else
-                        {
-                            saveImage(writePath, width, height, tex.ToArray());
-                        }
                     }
+                    string writePath = "processed/" + Path.ChangeExtension(file.alias, ".png");
+                    if (compressed)
+                    {
+                        saveImage(writePath, width, height, Squish.DecompressImage(tex.ToArray(), width, height, SquishFlags.Dxt5));
+                    }
+                    else
+                    {
+                        saveImage(writePath, width, height, tex.ToArray());
+                    }
+                    tex.Dispose();
                 }
             }
         }
