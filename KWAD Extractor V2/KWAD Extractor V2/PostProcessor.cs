@@ -45,6 +45,10 @@ namespace KWAD_Extractor_V2
                     {
                         processTex(file);
                     });
+                Parallel.ForEach(fileList.Where(file => file.type == "BLOB"), file =>
+                {
+                    processBlob(file);
+                });
             }
             processSrfCache();
         }
@@ -58,6 +62,17 @@ namespace KWAD_Extractor_V2
                 fStream.Read(temp, sigSize, (int)fStream.Length - sigSize);
                 ofStream.Write(temp, 0, temp.Length);
             }
+            switch (Path.GetExtension(file.alias))
+            {
+                case ".fsb":
+                    processFsb(file);
+                    break;
+            }
+        }
+
+        private void processFsb(VirtualFile file)
+        {
+
         }
 
         private void processSrf(VirtualFile file)
