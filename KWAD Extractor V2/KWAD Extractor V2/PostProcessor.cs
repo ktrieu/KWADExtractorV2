@@ -92,7 +92,6 @@ namespace KWAD_Extractor_V2
             fsbExt.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             fsbExt.StartInfo.RedirectStandardOutput = true;
             fsbExt.Start();
-            fsbExt.WaitForExit();
         }   
 
         private void processSrf(VirtualFile file)
