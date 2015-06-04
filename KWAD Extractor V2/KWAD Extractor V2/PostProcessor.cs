@@ -56,11 +56,11 @@ namespace KWAD_Extractor_V2
         private void processBlob(VirtualFile file)
         {
             using (FileStream fStream = File.Open("extracted/" + file.alias, FileMode.Open, FileAccess.Read))
-            using (FileStream ofStream = File.Open("processed/" + file.alias, FileMode.OpenOrCreate, FileAccess.Write))
+            using (FileStream ofStream = File.Open("processed/" + file.alias, FileMode.Create, FileAccess.Write))
             {
                 byte[] temp = new byte[fStream.Length];
-                fStream.Read(temp, sigSize, (int)fStream.Length - sigSize);
-                ofStream.Write(temp, 0, temp.Length);
+                fStream.Read(temp, 0, temp.Length);
+                ofStream.Write(temp, sigSize, temp.Length - sigSize);
             }
             switch (Path.GetExtension(file.alias))
             {
@@ -72,8 +72,25 @@ namespace KWAD_Extractor_V2
 
         private void processFsb(VirtualFile file)
         {
-
-        }
+            string password = "mint78run52";
+            Process decfsb = new Process();
+            decfsb.StartInfo.FileName = Directory.GetCurrentDirectory() + "\\exes\\decfsb.exe"; //this is horrible, but most likely the only way it works
+            decfsb.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory() + "\\processed\\" + Path.GetDirectoryName(file.alias);
+            decfsb.StartInfo.Arguments = Path.GetFileName(file.alias) + " " + Path.GetFileNameWithoutExtension(file.alias) + "_dec.fsb" +  " " + password;
+            decfsb.StartInfo.UseShellExecute = false;
+            decfsb.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            decfsb.StartInfo.RedirectStandardOutput = true;
+            decfsb.Start();
+            Process fsbExt = new Process();
+            fsbExt.StartInfo.FileName = Directory.GetCurrentDirectory() + "\\exes\\fsbext.exe"; //this is horrible, but most likely the only way it works
+            fsbExt.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory() + "\\processed\\" + Path.GetDirectoryName(file.alias);
+            Directory.CreateDirectory(fsbExt.StartInfo.WorkingDirectory + "/" + Path.GetFileNameWithoutExtension(file.alias));
+            fsbExt.StartInfo.Arguments = "-d " + Path.GetFileNameWithoutExtension(file.alias) + " " + Path.GetFileNameWithoutExtension(file.alias) + "_dec.fsb";
+            fsbExt.StartInfo.UseShellExecute = false;
+            fsbExt.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            fsbExt.StartInfo.RedirectStandardOutput = true;
+            fsbExt.Start();
+        }   
 
         private void processSrf(VirtualFile file)
         {
