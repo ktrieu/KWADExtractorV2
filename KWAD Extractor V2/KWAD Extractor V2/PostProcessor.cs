@@ -82,6 +82,7 @@ namespace KWAD_Extractor_V2
             decfsb.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             decfsb.StartInfo.RedirectStandardOutput = true;
             decfsb.Start();
+            decfsb.WaitForExit();
             Process fsbExt = new Process();
             fsbExt.StartInfo.FileName = Directory.GetCurrentDirectory() + "\\exes\\fsbext.exe"; //this is horrible, but most likely the only way it works
             fsbExt.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory() + "\\processed\\" + Path.GetDirectoryName(file.alias);
@@ -91,6 +92,7 @@ namespace KWAD_Extractor_V2
             fsbExt.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             fsbExt.StartInfo.RedirectStandardOutput = true;
             fsbExt.Start();
+            fsbExt.WaitForExit();
         }   
 
         private void processSrf(VirtualFile file)
