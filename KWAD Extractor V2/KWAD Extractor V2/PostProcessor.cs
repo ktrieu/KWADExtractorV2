@@ -55,6 +55,7 @@ namespace KWAD_Extractor_V2
 
         private void processBlob(VirtualFile file)
         {
+            Directory.CreateDirectory("processed/" + Path.GetDirectoryName(file.alias));
             using (FileStream fStream = File.Open("extracted/" + file.alias, FileMode.Open, FileAccess.Read))
             using (FileStream ofStream = File.Open("processed/" + file.alias, FileMode.Create, FileAccess.Write))
             {
