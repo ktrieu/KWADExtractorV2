@@ -55,9 +55,8 @@ namespace KWAD_Extractor_V2
 
         private void processBlob(VirtualFile file)
         {
-            Directory.CreateDirectory("processed/" + Path.GetDirectoryName(file.alias));
-            using (FileStream fStream = File.Open("extracted/" + file.alias, FileMode.Open, FileAccess.Read))
-            using (FileStream ofStream = File.Open("processed/" + file.alias, FileMode.Create, FileAccess.Write))
+            using (FileStream fStream = Util.getFileStream("extracted/" + file.alias, FileMode.Open, FileAccess.Read))
+            using (FileStream ofStream = Util.getFileStream("processed/" + file.alias, FileMode.Create, FileAccess.Write))
             {
                 byte[] temp = new byte[fStream.Length];
                 fStream.Read(temp, 0, temp.Length);
@@ -96,7 +95,7 @@ namespace KWAD_Extractor_V2
 
         private void processSrf(VirtualFile file)
         {
-            using (FileStream fStream = File.Open("extracted/" + file.alias, FileMode.Open, FileAccess.Read))
+            using (FileStream fStream = Util.getFileStream("extracted/" + file.alias, FileMode.Open, FileAccess.Read))
             using (BinaryReader reader = new BinaryReader(fStream))
             {
                 reader.ReadBytes(srfCompressionBoolOffset); //throw away some bytes we're not currently using
@@ -131,20 +130,18 @@ namespace KWAD_Extractor_V2
 
         private unsafe void saveImage(string path, int width, int height, byte[] img)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
             fixed (byte* dataPtr = img)
             {
                 using (Bitmap bmp = new Bitmap(width, height, width * 4, PixelFormat.Format32bppArgb, new IntPtr(dataPtr)))
                 {
-                    bmp.Save(path, ImageFormat.Png);
+                    bmp.Save(Util.getFileStream(path, FileMode.Create, FileAccess.Write), ImageFormat.Png);
                 }
             }
         }
 
         private void processTex(VirtualFile file)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName("processed/" + file.alias));
-            using (FileStream fStream = File.Open("extracted/" + file.alias, FileMode.Open, FileAccess.Read))
+            using (FileStream fStream = Util.getFileStream("extracted/" + file.alias, FileMode.Open, FileAccess.Read))
             using (BinaryReader reader = new BinaryReader(fStream))
             {
                 float[] affineData = new float[6];
@@ -176,7 +173,7 @@ namespace KWAD_Extractor_V2
             foreach (string key in srfCache.Keys)
             {
                 List<CachedSRF> srfs = srfCache[key];
-                using (FileStream fStream = File.Open(Path.ChangeExtension("processed/" + key, ".png"), FileMode.Open, FileAccess.Read))
+                using (FileStream fStream = Util.getFileStream(Path.ChangeExtension("processed/" + key, ".png"), FileMode.Open, FileAccess.Read))
                 using (MagickImage atlas = new MagickImage(fStream))
                 {
                     Rect imgRect = new Rect(0, 0, atlas.Width, atlas.Height);
@@ -194,7 +191,7 @@ namespace KWAD_Extractor_V2
                                     MagickGeometry geo = new MagickGeometry(rectangle);
                                     geo.IgnoreAspectRatio = true;
                                     sprite.Crop(geo);
-                                    sprite.Write(new FileStream("processed/" + srf.alias, FileMode.OpenOrCreate), MagickFormat.Png);
+                                    sprite.Write(Util.getFileStream("processed/" + srf.alias, FileMode.Create, FileAccess.Write));
                                 }
                             }
                         });         

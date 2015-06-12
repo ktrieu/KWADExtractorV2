@@ -99,6 +99,7 @@
     <Compile Include="PostProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util.cs" />
     <Compile Include="VirtualFile.cs" />
   </ItemGroup>
   <ItemGroup>
