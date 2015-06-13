@@ -90,6 +90,7 @@ namespace KWAD_Extractor_V2
             fsbExt.StartInfo.UseShellExecute = false;
             fsbExt.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             fsbExt.StartInfo.RedirectStandardOutput = true;
+            fsbExt.StartInfo.RedirectStandardError = true;
             fsbExt.Start();
         }   
 
