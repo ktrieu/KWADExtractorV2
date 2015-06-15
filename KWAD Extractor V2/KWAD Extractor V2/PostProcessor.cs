@@ -76,7 +76,7 @@ namespace KWAD_Extractor_V2
             Process decfsb = new Process();
             decfsb.StartInfo.FileName = Directory.GetCurrentDirectory() + "\\exes\\decfsb.exe"; //this is horrible, but most likely the only way it works
             decfsb.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory() + "\\processed\\" + Path.GetDirectoryName(file.alias);
-            decfsb.StartInfo.Arguments = Path.GetFileName(file.alias) + " " + Path.GetFileNameWithoutExtension(file.alias) + "_dec.fsb" +  " " + password;
+            decfsb.StartInfo.Arguments = Path.GetFileName(file.alias) + " " + Path.GetFileNameWithoutExtension(file.alias) + "_dec.fsb" + " " + password;
             decfsb.StartInfo.UseShellExecute = false;
             decfsb.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             decfsb.StartInfo.RedirectStandardOutput = true;
@@ -92,7 +92,7 @@ namespace KWAD_Extractor_V2
             fsbExt.StartInfo.RedirectStandardOutput = true;
             fsbExt.StartInfo.RedirectStandardError = true;
             fsbExt.Start();
-        }   
+        }
 
         private void processSrf(VirtualFile file)
         {
@@ -135,7 +135,10 @@ namespace KWAD_Extractor_V2
             {
                 using (Bitmap bmp = new Bitmap(width, height, width * 4, PixelFormat.Format32bppArgb, new IntPtr(dataPtr)))
                 {
-                    bmp.Save(Util.getFileStream(path, FileMode.Create, FileAccess.Write), ImageFormat.Png);
+                    using (FileStream fStream = Util.getFileStream(path, FileMode.Create, FileAccess.Write))
+                    {
+                        bmp.Save(fStream, ImageFormat.Png);
+                    }
                 }
             }
         }
@@ -164,7 +167,10 @@ namespace KWAD_Extractor_V2
                     {
                         srfCache.Add(imagePath, new List<CachedSRF>());
                     }
-                    srfCache[imagePath].Add(new CachedSRF(affineData, imagePath, file.alias));
+                    if (Path.ChangeExtension(imagePath, ".png") != file.alias) //this avoids duplicate entries in the file later
+                    {
+                        srfCache[imagePath].Add(new CachedSRF(affineData, imagePath, file.alias));
+                    }
                 }
             }
         }
@@ -180,22 +186,19 @@ namespace KWAD_Extractor_V2
                     Rect imgRect = new Rect(0, 0, atlas.Width, atlas.Height);
                     Parallel.ForEach(srfs, srf =>
                         {
-                            if (!File.Exists("processed/" + srf.alias))
+                            System.Windows.Media.Matrix affineTransform = new System.Windows.Media.Matrix(srf.transform[0], srf.transform[1], srf.transform[2], srf.transform[3], srf.transform[4], srf.transform[5]);
+                            Rect transformRect = Rect.Transform(imgRect, affineTransform);
+                            transformRect.X *= (int)imgRect.Width;
+                            transformRect.Y *= (int)imgRect.Height;
+                            Rectangle rectangle = new Rectangle((int)transformRect.X, (int)transformRect.Y, (int)transformRect.Width, (int)transformRect.Height);
+                            using (MagickImage sprite = new MagickImage(atlas))
                             {
-                                System.Windows.Media.Matrix affineTransform = new System.Windows.Media.Matrix(srf.transform[0], srf.transform[1], srf.transform[2], srf.transform[3], srf.transform[4], srf.transform[5]);
-                                Rect transformRect = Rect.Transform(imgRect, affineTransform);
-                                transformRect.X *= (int)imgRect.Width;
-                                transformRect.Y *= (int)imgRect.Height;
-                                Rectangle rectangle = new Rectangle((int)transformRect.X, (int)transformRect.Y, (int)transformRect.Width, (int)transformRect.Height);
-                                using (MagickImage sprite = new MagickImage(atlas))
-                                {
-                                    MagickGeometry geo = new MagickGeometry(rectangle);
-                                    geo.IgnoreAspectRatio = true;
-                                    sprite.Crop(geo);
-                                    sprite.Write(Util.getFileStream("processed/" + srf.alias, FileMode.Create, FileAccess.Write));
-                                }
+                                MagickGeometry geo = new MagickGeometry(rectangle);
+                                geo.IgnoreAspectRatio = true;
+                                sprite.Crop(geo);
+                                sprite.Write(Util.getFileStream("processed/" + srf.alias, FileMode.Create, FileAccess.Write));
                             }
-                        });         
+                        });
                 }
             }
         }
