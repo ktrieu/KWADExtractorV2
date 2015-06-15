@@ -16,26 +16,19 @@ namespace KWAD_Extractor_V2
     {
         public static FileStream getFileStream(string path, FileMode mode, FileAccess access)
         {
-            while (true) //just spinning the thread is probably a bad idea
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            FileStream fStream = null;
+            try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-                FileStream fStream = null;
-                try
-                {
-                    fStream = File.Open(path, mode, access);
-                }
-                catch (IOException e)
-                {
-                    //Don't want to spam the log here, and it seems like a very silent thing
-                    //Console.WriteLine("Could not acquire file handle for {0}... retrying", path); 
-                    //Console.WriteLine(e.Message);
-                }
-                if (fStream != null)
-                {
-                    return fStream;
-                }
+                fStream = File.Open(path, mode, access);
             }
-            
+            catch (IOException e)
+            {
+                //Don't want to spam the log here, and it seems like a very silent thing
+                //Console.WriteLine("Could not acquire file handle for {0}... retrying", path); 
+                //Console.WriteLine(e.Message);
+            }
+            return fStream;
         }
     }
 }
