@@ -46,11 +46,24 @@ namespace KWAD_Extractor_V2
                         processTex(file);
                     });
                 Parallel.ForEach(fileList.Where(file => file.type == "BLOB"), file =>
-                {
-                    processBlob(file);
-                });
+                    {
+                        processBlob(file);
+                    });
+                Parallel.ForEach(fileList.Where(file => file.type == "ANM1"), file =>
+                    {
+                        processAnim(file);
+                    });
             }
             processSrfCache();
+        }
+
+        private void processAnim(VirtualFile file)
+        {
+            using (FileStream fStream = Util.getFileStream("extracted/" + file.alias, FileMode.Open, FileAccess.Read))
+            using (BinaryReader reader = new BinaryReader(fStream))
+            {
+
+            }
         }
 
         private void processBlob(VirtualFile file)
